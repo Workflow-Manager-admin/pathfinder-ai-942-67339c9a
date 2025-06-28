@@ -1,23 +1,7 @@
-INFO:     Started server process [13016]
+INFO:     Started server process [26205]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3001 (Press CTRL+C to quit)
-INFO:     100.64.4.167:35420 - "HEAD /openapi.json HTTP/1.1" 200 OK
-INFO:     100.64.4.167:35428 - "GET /openapi.json HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57508 - "HEAD /docs HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57496 - "HEAD /docs HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57524 - "GET /docs HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57532 - "GET /docs HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57536 - "GET /openapi.json HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57540 - "GET /openapi.json HTTP/1.1" 200 OK
-INFO:     100.64.4.167:51914 - "GET /learning-paths/demo-user-001 HTTP/1.1" 200 OK
-INFO:     100.64.4.167:45540 - "GET /project-ideas/generic HTTP/1.1" 200 OK
-INFO:     100.64.4.167:45552 - "GET /project-ideas/generic HTTP/1.1" 200 OK
-INFO:     100.64.4.167:45558 - "GET /chat/history/demo-user-001 HTTP/1.1" 200 OK
-INFO:     100.64.4.167:45560 - "GET /chat/history/demo-user-001 HTTP/1.1" 200 OK
-INFO:     100.64.4.167:56246 - "OPTIONS /chat/send HTTP/1.1" 200 OK
-INFO:     100.64.4.167:56250 - "POST /chat/send HTTP/1.1" 422 Unprocessable Entity
-INFO:     100.64.4.167:51536 - "GET /chat/history/demo-user-001 HTTP/1.1" 200 OK
-INFO:     100.64.4.167:51548 - "GET /chat/history/demo-user-001 HTTP/1.1" 200 OK
-INFO:     100.64.4.167:57066 - "POST /chat/send HTTP/1.1" 422 Unprocessable Entity
-INFO:     100.64.4.167:47158 - "POST /chat/send HTTP/1.1" 422 Unprocessable Entity
+INFO:     100.64.4.167:48710 - "GET /learning-paths/demo-user-001 HTTP/1.1" 200 OK
+INFO:     100.64.4.167:42308 - "GET /project-ideas/generic HTTP/1.1" 200 OK
+INFO:     100.64.4.167:42322 - "GET /project-ideas/generic HTTP/1.1" 200 OK
