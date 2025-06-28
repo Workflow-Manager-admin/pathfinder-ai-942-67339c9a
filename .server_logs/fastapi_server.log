@@ -1,7 +1,7 @@
-INFO:     Started server process [26205]
+INFO:     Started server process [27796]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:3001 (Press CTRL+C to quit)
-INFO:     100.64.4.167:48710 - "GET /learning-paths/demo-user-001 HTTP/1.1" 200 OK
-INFO:     100.64.4.167:42308 - "GET /project-ideas/generic HTTP/1.1" 200 OK
-INFO:     100.64.4.167:42322 - "GET /project-ideas/generic HTTP/1.1" 200 OK
+INFO:     100.64.4.167:60670 - "GET /chat/history/demo-user-001 HTTP/1.1" 200 OK
+INFO:     100.64.4.167:60678 - "GET /chat/history/demo-user-001 HTTP/1.1" 200 OK
+INFO:     100.64.4.167:56530 - "POST /chat/send HTTP/1.1" 422 Unprocessable Entity

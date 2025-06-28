@@ -1,20 +1,23 @@
+import httpx
 from uuid import uuid4
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from ..models import ChatMessage
 from ..schemas import ChatMessageCreateRequest
+
+
+COHERE_API_URL = "https://api.cohere.ai/v1/chat"
+COHERE_API_KEY = "xyV9r163fmM8ieMhIFAUbmymr6DakgKJ8wj520lv"
+COHERE_MODEL = "command-r-plus"  # Or adjust to "command" or most suitable as per use/tier
+
+# Used for timeout on Cohere request
+_DEFAULT_TIMEOUT = 10.0
 
 
 # PUBLIC_INTERFACE
 def generate_mock_chat_response(request: ChatMessageCreateRequest) -> ChatMessage:
     """
-    Generate a semi-intelligent, simulated "AI" response to a user chat message.
-
-    This expands the prior stub. It detects question type, gives "AI-like" helpful
-    suggestions, recommends learning path or project, and includes fallback rule-based
-    replies—creating a more realistic Q&A experience.
-
-    Easily upgradable to call a real LLM/OpenAI API in the future.
+    Generate a real AI chat response by sending the request to Cohere's /chat API endpoint.
 
     Args:
         request (ChatMessageCreateRequest): The incoming user message.
@@ -23,63 +26,53 @@ def generate_mock_chat_response(request: ChatMessageCreateRequest) -> ChatMessag
         ChatMessage: Assistant's response.
     """
     user_text = request.content or ""
-    lower_text = user_text.lower().strip()
-    # Simple keyword/rule-based mock "AI" (could upgrade to OpenAI or transformers)
-    if not user_text:
-        mock_answer = (
-            "Hi! Please type a question, for example: 'How do I start learning Python?'"
+    # Prepare message history (optional): not implemented, for now send stateless request.
+    # To use previous context, you may wish to collect chat history from storage here and pass as "chat_history"
+    data = {
+        "message": user_text,
+        "model": COHERE_MODEL,
+        # Optionally, system prompt, chat_history, temperature, etc.
+    }
+    auth_header = "Bearer " + COHERE_API_KEY
+    headers = {
+        "Authorization": auth_header,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    ai_reply = None
+    error_message = None
+    try:
+        with httpx.Client(timeout=_DEFAULT_TIMEOUT) as client:
+            response = client.post(COHERE_API_URL, headers=headers, json=data)
+        if response.status_code != 200:
+            # Possible errors: Invalid API key (401), bad input, rate limit, network etc.
+            detail = response.json().get("message") or response.text
+            error_message = (
+                "Sorry, I couldn't process your message due to an API error: "
+                f"{detail}"
+            )
+        else:
+            resp_json = response.json()
+            # Cohere returns "text" or "reply" key, depending on version
+            ai_reply = resp_json.get("text") or resp_json.get("reply")
+            if not ai_reply:
+                error_message = "Received empty AI response. Please try again."
+    except httpx.RequestError:
+        error_message = (
+            "There was a network error reaching the AI service. Please try again."
         )
-    elif "python" in lower_text and "start" in lower_text:
-        mock_answer = (
-            "To get started with Python, begin with the 'Intro to Python Programming' "
-            "module in your learning path. "
-            "Would you like some recommended "
-            "resources?"
+    except Exception:
+        error_message = (
+            "Something went wrong when generating your answer. Please try again."
         )
-    elif "project" in lower_text and ("idea" in lower_text or "suggest" in lower_text):
-        mock_answer = (
-            "Looking for a project idea? How about building a weather app or a personal portfolio site? "
-            "Let me know your interests or tech skills for tailored suggestions!"
-        )
-    elif "learning path" in lower_text or "module" in lower_text:
-        mock_answer = (
-            "Explore your personalized learning path to see modules that match your goals. "
-            "Need advice on which topic to focus on next?"
-        )
-    elif "help" in lower_text:
-        mock_answer = (
-            "I'm here to help! Ask about learning topics, recommended courses, or project ideas. "
-            "Example: 'Suggest a backend project' or 'What should I learn after Python basics?'"
-        )
-    elif "recommend" in lower_text or "suggest" in lower_text:
-        mock_answer = (
-            "Can you tell me your main interests or your preferred learning style? "
-            "That will help me recommend courses or projects customized for you!"
-        )
-    elif "thank" in lower_text or "thanks" in lower_text:
-        mock_answer = "You're welcome! Let me know if you have any more questions."
-    elif lower_text.endswith("?"):
-        mock_answer = (
-            "That's a great question! Here's what I suggest: "
-            "Try to search for resources in your learning path, or ask about a specific technology. "
-            "If you need project ideas, just mention your skills!"
-        )
-    else:
-        # Generic fallback: echo with encouragement, properly split long line
-        mock_answer = (
-            f"I received your message: '{user_text}'. "
-            "If you want help with learning paths, programming, or new project "
-            "ideas, please specify!"
-        )
-
     answer = ChatMessage(
         message_id=str(uuid4()),
         user_id=request.user_id,
         sender="assistant",
-        content=mock_answer,
+        content=ai_reply if ai_reply else error_message,
         timestamp=datetime.utcnow(),
         context_type=request.context_type,
-        context_id=request.context_id
+        context_id=request.context_id,
     )
     return answer
 
@@ -87,11 +80,12 @@ def generate_mock_chat_response(request: ChatMessageCreateRequest) -> ChatMessag
 # PUBLIC_INTERFACE
 def get_mock_chat_history(
     user_id: str,
-    context_type: str = None,
-    context_id: str = None
+    context_type: Optional[str] = None,
+    context_id: Optional[str] = None
 ) -> List[ChatMessage]:
     """
     Return a sample chat/Q&A history for a user.
+    (This does not fetch from Cohere, for now returns a fixed example.)
     """
     now = datetime.utcnow()
     return [
