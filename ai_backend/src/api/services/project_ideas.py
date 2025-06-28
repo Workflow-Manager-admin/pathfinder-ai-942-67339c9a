@@ -233,15 +233,15 @@ def generate_mock_project_ideas(request: ProjectIdeaGenerateRequest) -> List[Pro
     while (
         len(personalized) < 3
         and
-        len(personalized) < len(_SAMPLE_TEMPLATES) + len(_GENERIC_IDEAS)
+        len(personalized)
+        < len(_SAMPLE_TEMPLATES) + len(_GENERIC_IDEAS)
     ):
         for fallback in _GENERIC_IDEAS:
             if fallback["title"] in used_titles:
                 continue
             if (
                 request.difficulty
-                and
-                fallback.get("difficulty")
+                and fallback.get("difficulty")
                 and
                 fallback["difficulty"].lower() != request.difficulty.lower()
             ):

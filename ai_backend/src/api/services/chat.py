@@ -26,12 +26,19 @@ def generate_mock_chat_response(request: ChatMessageCreateRequest) -> ChatMessag
         ChatMessage: Assistant's response.
     """
     user_text = request.content or ""
-    # Prepare message history (optional): not implemented, for now send stateless request.
-    # To use previous context, you may wish to collect chat history from storage here and pass as "chat_history"
+    # SYSTEM PROMPT (optional, configure if needed)
+    system_instructions = (
+        "You are SkillBridge AI—an empathetic, knowledgeable assistant that gives clear, "
+        "practical guidance on tech learning, careers, and project ideas. Tailor suggestions to "
+        "the user's level. Do not assume context not provided."
+    )
+    # Prepare request with optional system prompt and stateless chat for now.
     data = {
         "message": user_text,
         "model": COHERE_MODEL,
-        # Optionally, system prompt, chat_history, temperature, etc.
+        "preamble": system_instructions,
+        # "temperature": 0.6,  # Optionally tune temperature
+        # Optionally, add "chat_history" (list of {role,msg}) for context
     }
     auth_header = "Bearer " + COHERE_API_KEY
     headers = {
@@ -45,25 +52,44 @@ def generate_mock_chat_response(request: ChatMessageCreateRequest) -> ChatMessag
         with httpx.Client(timeout=_DEFAULT_TIMEOUT) as client:
             response = client.post(COHERE_API_URL, headers=headers, json=data)
         if response.status_code != 200:
-            # Possible errors: Invalid API key (401), bad input, rate limit, network etc.
-            detail = response.json().get("message") or response.text
+            # Handle bad responses robustly even if not JSON
+            try:
+                resp_json = response.json()
+                # Cohere sometimes uses "message", sometimes "error", nested vals
+                detail = (
+                    resp_json.get("message")
+                    or resp_json.get("error")
+                    or resp_json.get("error_message")
+                    or response.text
+                )
+            except Exception:
+                detail = response.text
             error_message = (
                 "Sorry, I couldn't process your message due to an API error: "
                 f"{detail}"
             )
         else:
             resp_json = response.json()
-            # Cohere returns "text" or "reply" key, depending on version
+            # Cohere v1 returns "text" (most common), "reply" (sometimes), or "generations"
             ai_reply = resp_json.get("text") or resp_json.get("reply")
+            # Fallback: check for "generations" (OpenAI-style; Cohere sometimes adapts)
+            if not ai_reply and "generations" in resp_json:
+                gens = resp_json.get("generations")
+                if isinstance(gens, list) and gens:
+                    ai_reply = gens[0].get("text")
             if not ai_reply:
-                error_message = "Received empty AI response. Please try again."
+                error_message = (
+                    "Received empty or unrecognized AI response from Cohere. "
+                    "Please try again later."
+                )
     except httpx.RequestError:
         error_message = (
             "There was a network error reaching the AI service. Please try again."
         )
-    except Exception:
+    except Exception as ex:
         error_message = (
-            "Something went wrong when generating your answer. Please try again."
+            f"Something went wrong when generating your answer "
+            f"({type(ex).__name__}): {ex}"
         )
     answer = ChatMessage(
         message_id=str(uuid4()),
