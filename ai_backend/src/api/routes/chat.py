@@ -30,5 +30,9 @@ def get_chat_history(user_id: str):
 # PUBLIC_INTERFACE
 @router.post("/send", response_model=ChatMessageSchema, summary="Send message to assistant")
 def send_message(request: ChatMessageCreateRequest):
-    """Send a user message and get an assistant response (mock, non-AI)."""
-    return generate_mock_chat_response(request)
+    """Send a user message and get an assistant response via Cohere or mock."""
+    reply = generate_mock_chat_response(request)
+    # If this is an error propagated from services, print/log for debugging transparency.
+    if reply.sender == "assistant" and "Sorry" in (reply.content or ""):
+        print(f"[AI Chat Error] Cohere call failed or returned error: {reply.content}")
+    return reply

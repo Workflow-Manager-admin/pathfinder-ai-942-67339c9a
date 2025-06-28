@@ -230,30 +230,16 @@ def generate_mock_project_ideas(request: ProjectIdeaGenerateRequest) -> List[Pro
             used_titles.add(template["title"])
 
     # If not enough results, pad with generic ideas
-    while (
-        len(personalized) < 3
-        and
-        len(personalized)
-        < len(_SAMPLE_TEMPLATES) + len(_GENERIC_IDEAS)
-    ):
+    while (len(personalized) < 3 and
+           len(personalized) < (len(_SAMPLE_TEMPLATES) + len(_GENERIC_IDEAS))):
         for fallback in _GENERIC_IDEAS:
             if fallback["title"] in used_titles:
                 continue
-            if (
-                request.difficulty
-                and fallback.get("difficulty")
-                and
-                fallback["difficulty"].lower() != request.difficulty.lower()
-            ):
+            if (request.difficulty and fallback.get("difficulty") and
+                    fallback["difficulty"].lower() != request.difficulty.lower()):
                 continue
-            if (
-                provided_tags
-                and
-                not any(
-                    tag in fallback.get("tags", [])
-                    for tag in provided_tags
-                )
-            ):
+            if (provided_tags and
+                    not any(tag in fallback.get("tags", []) for tag in provided_tags)):
                 continue
             personalized.append(ProjectIdea(
                 idea_id=str(uuid4()),
@@ -283,8 +269,7 @@ def generate_mock_project_ideas(request: ProjectIdeaGenerateRequest) -> List[Pro
                 difficulty=idea["difficulty"],
                 tags=idea["tags"],
                 created_at=now,
-            )
-            for idea in _GENERIC_IDEAS
+            ) for idea in _GENERIC_IDEAS
         ]
     return personalized
 
