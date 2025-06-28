@@ -69,7 +69,8 @@ def generate_mock_learning_path(
         name=name or "Python Developer Starter Path",
         summary=(
             summary
-            or "Step-by-step beginner learning journey to understand Python and build your first API."
+            or "Step-by-step beginner learning journey to understand Python and "
+               "build your first API."
         ),
         items=mock_items,
         created_at=now,
@@ -110,4 +111,5 @@ def get_mock_learning_paths_for_user(user_id: str) -> List[LearningPath]:
     """
     Return a list of sample (mock) learning paths for a user.
     """
+    # The function returns a list with a single mock path for the user
     return [generate_mock_learning_path(user_id)]
